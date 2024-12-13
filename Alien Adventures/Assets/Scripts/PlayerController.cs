@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour
 {
@@ -38,16 +39,31 @@ public class PlayerController : MonoBehaviour
     public RuntimeAnimatorController jumperController;
     public RuntimeAnimatorController floaterController;
 
+    [Header("Jump Checks")]
+    public bool jumped;
+    public bool grounded;
+    public int jumpCount;
+
+    [Header("Dash Checks")]
+    public bool canDash;
+    public bool isDashing;
+    public float dashForce = 20f; 
+    public float dashTime = 0.2f;
+    public float dashCooldown = 1f;
+    private Vector2 moveDirection;
+
     [Header("Checks")]
     public PlayerStates currentState;
-    public bool grounded;
-    
-
 
     // Start is called before the first frame update
     void Start()
     {
         grounded = true;
+        jumped = false;
+        jumpCount = 0;
+
+        canDash = true;
+        isDashing = false;
 
         anim = GetComponent<Animator>();    
         sr = GetComponent<SpriteRenderer>();
@@ -59,10 +75,24 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        Movement();
 
-        if (Input.GetButtonDown("Jump") && grounded) {
-            Jump();
+        if (Input.GetButtonDown("Jump"))
+        {
+            if (grounded)
+            {
+                jumped = true;
+                jumpCount++;
+            }
+            else if (!grounded && jumpCount == 1)
+            {
+                jumped = true;
+                jumpCount++;
+            }
+        }
+
+        if (Input.GetKeyDown(KeyCode.E) && canDash)
+        {
+            StartCoroutine(Dash());
         }
 
         SwitchStates();
@@ -82,9 +112,16 @@ public class PlayerController : MonoBehaviour
 
     }
 
-    private void FixedUpdate()
+    void FixedUpdate()
     {
-        
+        Movement();
+
+        if (jumped)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
+            grounded = false;
+            jumped = false;
+        }
     }
 
     void SwitchStates()
@@ -140,6 +177,7 @@ public class PlayerController : MonoBehaviour
         horiMovement = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(horiMovement * movementSpeed, rb.velocity.y);
 
+
         if (horiMovement < 0f)
         {
             anim.SetBool("isWalking", true);
@@ -156,10 +194,25 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    void Jump()
+    private IEnumerator Dash()
     {
-        rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
-        grounded = false;
+        canDash = false;
+        isDashing = true;
+
+        float origScale = rb.gravityScale;
+        rb.gravityScale = 0f;
+
+        // rb.velocity = new Vector2(transform.localScale.x * dashForce, 0f);
+        float origSpeed = movementSpeed;
+        movementSpeed = 20f;
+
+        yield return new WaitForSeconds(dashTime);
+        rb.gravityScale = origScale;
+        movementSpeed = origScale;
+        isDashing = false;
+
+        yield return new WaitForSeconds(dashCooldown);
+        canDash = true;
     }
 
     private void OnCollisionEnter2D(Collision2D other)
@@ -167,6 +220,7 @@ public class PlayerController : MonoBehaviour
         if(other.gameObject.CompareTag("Platform"))
         {
             grounded = true;
+            jumpCount = 0;
         }
     }
 

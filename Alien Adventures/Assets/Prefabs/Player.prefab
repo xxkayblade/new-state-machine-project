@@ -183,6 +183,14 @@ MonoBehaviour:
   baseController: {fileID: 9100000, guid: 76292d936718ae44f8816fa51882e678, type: 2}
   jumperController: {fileID: 9100000, guid: b95029b075ef43b4a90c6f3bd9145cb2, type: 2}
   floaterController: {fileID: 9100000, guid: f7b740f672d6f1644b671b7c33c6c3ac, type: 2}
+  jumped: 0
+  grounded: 0
+  jumpCount: 0
+  canDash: 0
+  isDashing: 0
+  dashForce: 20
+  dashTime: 0.2
+  dashCooldown: 1
   currentState: 0
 --- !u!114 &6809994994503185871
 MonoBehaviour:
