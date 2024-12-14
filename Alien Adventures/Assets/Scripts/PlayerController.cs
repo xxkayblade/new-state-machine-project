@@ -5,7 +5,6 @@ using UnityEngine.EventSystems;
 
 public class PlayerController : MonoBehaviour
 {
-
     float horiMovement;
     private Animator anim;
     private SpriteRenderer sr;
@@ -47,10 +46,11 @@ public class PlayerController : MonoBehaviour
     [Header("Dash Checks")]
     public bool canDash;
     public bool isDashing;
-    public float dashForce = 20f; 
+    public float dashSpeed = 20f; 
     public float dashTime = 0.2f;
     public float dashCooldown = 1f;
-    private Vector2 moveDirection;
+    public Vector2 dashDir;
+    public bool dashed; 
 
     [Header("Checks")]
     public PlayerStates currentState;
@@ -61,6 +61,7 @@ public class PlayerController : MonoBehaviour
         grounded = true;
         jumped = false;
         jumpCount = 0;
+        dashed = false;
 
         canDash = true;
         isDashing = false;
@@ -92,7 +93,7 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetKeyDown(KeyCode.E) && canDash)
         {
-            StartCoroutine(Dash());
+            dashed = true; 
         }
 
         SwitchStates();
@@ -121,6 +122,11 @@ public class PlayerController : MonoBehaviour
             rb.velocity = new Vector2(rb.velocity.x, jumpHeight);
             grounded = false;
             jumped = false;
+        }
+
+        if (dashed)
+        {
+            StartCoroutine(Dash());
         }
     }
 
@@ -201,17 +207,22 @@ public class PlayerController : MonoBehaviour
 
         float origScale = rb.gravityScale;
         rb.gravityScale = 0f;
+        anim.SetBool("isWalking", false);
 
-        // rb.velocity = new Vector2(transform.localScale.x * dashForce, 0f);
-        float origSpeed = movementSpeed;
-        movementSpeed = 20f;
+        dashDir = new Vector2(Input.GetAxisRaw("Horizontal"), Input.GetAxisRaw("Vertical"));
+        if (dashDir == Vector2.zero)
+        {
+            dashDir = new Vector2(transform.localScale.x * dashSpeed, 0f);
+        }
+
+        rb.velocity = dashDir.normalized * dashSpeed;
 
         yield return new WaitForSeconds(dashTime);
         rb.gravityScale = origScale;
-        movementSpeed = origScale;
         isDashing = false;
 
         yield return new WaitForSeconds(dashCooldown);
+        dashed = false;
         canDash = true;
     }
 

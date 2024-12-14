@@ -188,9 +188,11 @@ MonoBehaviour:
   jumpCount: 0
   canDash: 0
   isDashing: 0
-  dashForce: 20
-  dashTime: 0.2
+  dashSpeed: 20
+  dashTime: 0.05
   dashCooldown: 1
+  dashDir: {x: 0, y: 0}
+  dashed: 0
   currentState: 0
 --- !u!114 &6809994994503185871
 MonoBehaviour:
