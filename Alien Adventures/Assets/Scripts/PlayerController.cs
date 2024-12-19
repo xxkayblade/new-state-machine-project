@@ -47,7 +47,7 @@ public class PlayerController : MonoBehaviour
     public bool canDash;
     public bool isDashing;
     public float dashSpeed = 20f; 
-    public float dashTime = 0.2f;
+    public float dashTime = 0.15f;
     public float dashCooldown = 1f;
     public Vector2 dashDir;
     public bool dashed; 
@@ -84,16 +84,19 @@ public class PlayerController : MonoBehaviour
                 jumped = true;
                 jumpCount++;
             }
-            else if (!grounded && jumpCount == 1)
+            else if (currentState == PlayerStates.JUMPER && !grounded && jumpCount == 1)
             {
                 jumped = true;
                 jumpCount++;
             }
         }
 
-        if (Input.GetKeyDown(KeyCode.E) && canDash)
+        if (currentState == PlayerStates.BASE)
         {
-            dashed = true; 
+            if (Input.GetKeyDown(KeyCode.E) && canDash)
+            {
+                dashed = true;
+            }
         }
 
         SwitchStates();
@@ -220,9 +223,9 @@ public class PlayerController : MonoBehaviour
         yield return new WaitForSeconds(dashTime);
         rb.gravityScale = origScale;
         isDashing = false;
+        dashed = false;
 
         yield return new WaitForSeconds(dashCooldown);
-        dashed = false;
         canDash = true;
     }
 
